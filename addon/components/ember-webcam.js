@@ -15,7 +15,8 @@ export default Component.extend({
   init() {
     this._super(...arguments);
     this.set('camera', {
-      snap: this.snap.bind(this)
+      snap: this.snap.bind(this),
+      live: false
     });
   },
   didInsertElement() {
@@ -27,12 +28,18 @@ export default Component.extend({
         this.get('didError')(error);
       }
     });
+    Webcam.on('live', () => {
+      if (!this.isDestroying && !this.isDestroyed) {
+        this.set('camera.live', true);
+      }
+    });
     Webcam.attach('#' + this.get('cameraId'));
   },
   willDestroyElement() {
     this._super(...arguments);
     Webcam.reset();
     Webcam.off('error');
+    Webcam.off('live');
   },
   snap() {
     Webcam.snap(dataUri => {
